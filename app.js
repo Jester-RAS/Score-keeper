@@ -178,6 +178,13 @@ function dateLabel(ms) {
                  : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
+/* Some embedded contexts refuse modal dialogs. Losing a hand to a blocked
+   confirm() is worse than asking one time too few. */
+function ask(question) {
+  try { return window.confirm(question); }
+  catch (err) { return true; }
+}
+
 let toastTimer = null;
 function toast(message) {
   let node = document.querySelector('.toast');
@@ -755,7 +762,7 @@ document.addEventListener('click', ev => {
       ev.stopPropagation();
       const doomed = store.games.find(g => g.id === id);
       if (!doomed) break;
-      if (!confirm(`Delete the game with ${doomed.players.map(p => p.name).join(', ')}?`)) break;
+      if (!ask(`Delete the game with ${doomed.players.map(p => p.name).join(', ')}?`)) break;
       store.games = store.games.filter(g => g.id !== id);
       saveStore();
       render();
@@ -826,7 +833,7 @@ document.addEventListener('click', ev => {
       break;
 
     case 'delete-round': {
-      if (!confirm('Delete this hand? Every total after it is worked out again.')) break;
+      if (!ask('Delete this hand? Every total after it is worked out again.')) break;
       game.rounds = game.rounds.filter(r => r.id !== state.draft.roundId);
       touch(game);
       state.draft = null;
@@ -836,7 +843,7 @@ document.addEventListener('click', ev => {
 
     case 'undo-round': {
       if (!game.rounds.length) break;
-      if (!confirm('Undo the last hand?')) break;
+      if (!ask('Undo the last hand?')) break;
       game.rounds.pop();
       touch(game);
       render();
@@ -865,7 +872,7 @@ document.addEventListener('click', ev => {
     case 'drop-player': {
       if (game.players.length <= 2) break;
       const gone = game.players.find(p => p.id === id);
-      if (!confirm(`Take ${gone.name} out of this game?`)) break;
+      if (!ask(`Take ${gone.name} out of this game?`)) break;
       game.players = game.players.filter(p => p.id !== id);
       game.rounds.forEach(r => {
         r.entries = r.entries.filter(e => e.playerId !== id);
