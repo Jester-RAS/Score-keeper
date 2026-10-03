@@ -85,7 +85,11 @@ function tally(game) {
       const t = map.get(entry.playerId);
       if (!t) continue;                       // a player removed after the hand
       t.score += Number(entry.points) || 0;
-      if (entry.made && !t.made.includes(entry.phase)) t.made.push(entry.phase);
+      if (!entry.made) continue;
+      // In order, a make is always the next phase: the phase stored with a hand
+      // goes stale once an earlier hand is fixed or deleted.
+      const phase = game.freePhases ? entry.phase : t.made.length + 1;
+      if (phase <= PHASES.length && !t.made.includes(phase)) t.made.push(phase);
     }
   }
 
@@ -142,6 +146,7 @@ function go(view, extra, replace) {
 }
 
 window.addEventListener('popstate', ev => {
+  closeSheet();                   // a sheet left open would act on the wrong game
   if (ev.state && ev.state.view) {
     Object.assign(state, ev.state);
     state.draft = null;
@@ -251,6 +256,7 @@ function home() {
 
 function setup() {
   const s = state.setup;
+  if (!s) return home();          // browser Back into a setup that has been started
   const rows = s.names.map((name, i) => `
     <div class="name-row">
       <span class="dot" style="--hue:${HUES[i % HUES.length]}"></span>
