@@ -1,0 +1,7 @@
+# Server output: server.log, server.err.log, and the timestamped copies the
+# watchdog keeps of a crashed run's error log (server.err.YYYYMMDD-HHMMSS.log).
+*.log
+
+# Python
+__pycache__/
+*.pyc
